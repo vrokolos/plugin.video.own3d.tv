@@ -1,0 +1,14 @@
+Changelog - own3D.tv Game Channel Player for xbmc
+-------------------------------------------------
+0.2.0
+
+- forked from http://sourceforge.net/projects/xbmcdude-addons/
+- added support for livestreams
+- support is a bit flakey; somtimes streams wont load try again they will etc
+
+0.1.0
+
+- initial release
+
+
+

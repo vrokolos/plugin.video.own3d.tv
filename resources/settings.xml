@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+   <setting id="play_hd" type="bool" label="2100" default="true"/>
+   <setting id="show_channelname_inlist" type="bool" label="2101" default="true"/>
+   <setting id="favorite_channels" type="text" label="2102" default="HDHomerJ"/>
+</settings>

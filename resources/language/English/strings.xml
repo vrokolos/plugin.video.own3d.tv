@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<!-- Available id from 2000 to x -->
+
+	<string id="2005">More videos of %s</string>
+	<string id="2006">Subscripe %s</string>
+	<string id="2007">Unsubscripe %s</string>
+			
+	<!-- Categories -->
+	<string id="2010">Most Popular</string>
+	<string id="2011">Watched Now</string>
+	<string id="2012">Most Recent</string>
+	<string id="2013">Games</string>
+	<string id="2014">Livestreams</string>
+	<string id="2015">My Subscriptions</string>
+	
+	<!-- Settings -->	
+	<string id="2100">Prefer HD videos</string>
+	<string id="2101">Show channel name in list</string>
+	<string id="2102">Subscriptions</string>
+	
+</strings>

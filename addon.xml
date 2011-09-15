@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+  id="plugin.video.own3d.tv"
+  version="0.1.0"
+  name="own3D.tv"
+  provider-name="nevermore">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+
+    <extension point="xbmc.python.pluginsource" library="own3d.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+	    <summary lang="de">own3D.tv</summary>
+        <summary lang="en">own3D.tv</summary>
+	    <description lang="de">
+			own3d.tv Gaming Videos and Livestreams
+	    </description>
+        <description lang="en">
+			own3d.tv Gaming Videos and Livestreams
+	    </description>
+        <disclaimer lang="en">http://www.own3d.tv/content/1/#policy_terms</disclaimer>
+    </extension>
+</addon>
