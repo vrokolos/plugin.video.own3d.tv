@@ -19,7 +19,7 @@ import xbmc, xbmcgui, xbmcplugin, urllib, urllib2, re
 import os, xbmcaddon, sys
 import time
 
-Addon = xbmcaddon.Addon( id=os.path.basename( os.getcwd() ) )
+Addon = xbmcaddon.Addon('plugin.video.own3d.tv')
 
 class own3Dvideo :
         def __init__( self, Addon, prefetch=False ):
@@ -236,25 +236,37 @@ def ShowVideo(videoid,channelname):
     return 1
 
 def ShowLiveVideo(videoid,title):
-    xbmc.log("rtmp play")
-    url="rtmp://owned.fc.llnwd.net:1935/owned";    
+    xbmc.log("rtmp play")   
     item = xbmcgui.ListItem("RTMPLocal")
     plot="live"
     baseinfo="http://www.own3d.tv/livecfg/"+str(videoid)
     lines=GrabHTMLFromSite(baseinfo,"")
     channelname=GrabValueReg(lines,'owner="(.+?)"')
     xbmc.log(channelname)
-    #item.setProperty("SWFPlayer", "http://static.ec.own3d.tv/player/3.2.2.2/flowplayer.rtmp.swf")
-    #item.setProperty("SWFPlayer", "http://img.hw.own3d.tv/player/Own3dPlayerV2_4.swf")
-    #item.setProperty("SWFVerify", "true")
+    match = re.compile('quality="0" name="(.+?)"').findall(lines)
+    print 'match = '+str(len(match))
+    l=0
+    p_path = None
+    for i in match:
+        if len(i) > l:
+            l = len(i)
+            p_path = i
+            print 'p_path = '+p_path
+        else: continue
+   
+    pageurl = ' pageUrl='+GrabValueReg(lines,'ownerLink="(.+?)"')
+    playpath = ' Playpath='+p_path
+    try:
+        tcUrl = 'rtmp://fml.2010.edgecastcdn.net:1935/202010?'+playpath.split('?')[1][:28]
+    except:
+        tcUrl = 'rtmp://fml.2010.edgecastcdn.net:1935/202010?'+playpath.split('=')[1]
+    swf = ' swfUrl=http://static.ec.own3d.tv/player/Own3dPlayerV2_86.swf swfVfy=True Live=True'
+    url = tcUrl+pageurl+playpath+swf
     item.setInfo( type="Video", infoLabels={"Title": title, "Plot": plot , "TVShowTitle": channelname, "Description": plot} )
-    item.setProperty("IsLive", "true")
-    item.setProperty("PlayPath", str(channelname).lower()+"_"+str(videoid))
     xbmc.log(str(channelname).lower()+"_"+str(videoid))
-    #item.setProperty("PlayPath", "esltv_57424")
     xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(url, item)
-    #xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
     return 1
 
 def MySubscriptions():
