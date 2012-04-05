@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
+import xml.dom.minidom
+from xml.dom.minidom import parse, parseString
 import xbmc, xbmcgui, xbmcplugin, urllib, urllib2, re
 import os, xbmcaddon, sys
 import time
@@ -236,39 +237,96 @@ def ShowVideo(videoid,channelname):
     return 1
 
 def ShowLiveVideo(videoid,title):
-    xbmc.log("rtmp play")   
-    item = xbmcgui.ListItem("RTMPLocal")
-    plot="live"
-    baseinfo="http://www.own3d.tv/livecfg/"+str(videoid)
-    lines=GrabHTMLFromSite(baseinfo,"")
-    channelname=GrabValueReg(lines,'owner="(.+?)"')
-    xbmc.log(channelname)
-    match = re.compile('quality="0" name="(.+?)"').findall(lines)
-    print 'match = '+str(len(match))
-    l=0
-    p_path = None
-    for i in match:
-        if len(i) > l:
-            l = len(i)
-            p_path = i
-            print 'p_path = '+p_path
-        else: continue
-   
-    pageurl = ' pageUrl='+GrabValueReg(lines,'ownerLink="(.+?)"')
-    playpath = ' Playpath='+p_path
-    try:
-        tcUrl = 'rtmp://fml.2010.edgecastcdn.net:1935/202010?'+playpath.split('?')[1][:28]
-    except:
-        tcUrl = 'rtmp://fml.2010.edgecastcdn.net:1935/202010?'+playpath.split('=')[1]
-    swf = ' swfUrl=http://static.ec.own3d.tv/player/Own3dPlayerV2_86.swf swfVfy=True Live=True'
-    url = tcUrl+pageurl+playpath+swf
-    item.setInfo( type="Video", infoLabels={"Title": title, "Plot": plot , "TVShowTitle": channelname, "Description": plot} )
-    xbmc.log(str(channelname).lower()+"_"+str(videoid))
-    xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(url, item)
+        xbmc.log("rtmp play")   
+	item = xbmcgui.ListItem("RTMPLocal")
 
-    xbmcplugin.endOfDirectory(int(sys.argv[1]))
-    return 1
+	baseinfo="http://www.own3d.tv/livecfg/"+str(videoid)
+	dom = parse(urllib.urlopen(baseinfo))
+	channelname = dom.getElementsByTagName("channel")[0].attributes["owner"].value
+	streaminfolist = dom.getElementsByTagName("item")
+	i = 0
+	cdninfo=[]
+	for stream in streaminfolist:
+			cdninfo.append(stream)
+			i = i + 1
+	cdnrtmp=[None]*(i+1)
+	cdnHD=[None]*(i+1)
+	cdnpath=[None]*(i+1)
+	j = 0
+	while j < i:
+			cdnrtmp[j] = cdninfo[j].attributes["base"].value
+			cdnHD[j] = cdninfo[j].getElementsByTagName("stream")
+			cdnpath[j] = cdnHD[j][0].attributes["name"].value
+			j = j + 1
+	j = 0
+	cdn1 = -1
+	cdn2 = -1
+	cdncust = -1
+	while j < i:
+			if '${cdn2}' in cdnrtmp[j]:
+					cdn2 = j
+			if 'rtmp' in cdnrtmp[j]:
+					cdncust = j
+			if '${cdn1}' in cdnrtmp[j]:
+					cdn1 = j
+			j = j + 1
+			
+	rtmpurl1 = ''
+	cdnpathc1 = ''
+	rtmpurlcust = ''
+	cdnpathccust = ''
+	rtmpurl2 = ''
+	cdnpathc2 = ''
+	
+	if cdn1 != -1:
+		rtmpurl1 = 'rtmp://fml.2010.edgecastcdn.net:1935/202010'
+		cdnpathc1 = cdnpath[cdn1]
+	if cdncust != -1:
+		rtmpurlcust = cdnrtmp[cdncust]
+		cdnpathccust = cdnpath[cdncust]
+	if cdn2 != -1:
+		rtmpurl2 = 'rtmp://fcds503.atl.llnw.net:1935/owned/'
+		cdnpathc2 = cdnpath[cdn2]
+				  
+	channelinfo = dom.getElementsByTagName("channel")
+	ownerlinkurl = channelinfo[0].attributes["ownerLink"]
+	pageurl = ' pageUrl='+ownerlinkurl.value
+	swf = ' swfUrl=http://static.ec.own3d.tv/player/Own3dPlayerV2_86.swf swfVfy=True Live=True'
+	done = 0
+	if rtmpurl1 != '':
+		done = tryvideo(rtmpurl1, cdnpathc1,item,pageurl,swf,channelname,title);
+	if done == 1: 
+		return 1
+	if rtmpurl2 != '':
+		done = tryvideo(rtmpurl2, cdnpathc2,item,pageurl,swf,channelname,title);
+	if done == 1:
+		return 1
+	if rtmpurlcust != '':
+		done = tryvideo(rtmpurlcust, cdnpathcust,item,pageurl,swf,channelname,title);
+	return 1
 
+def tryvideo(rtmpurl,cdnpathc,item,pageurl,swf,channelname,title):
+	try:
+		print 'trying ' + rtmpurl
+		plot="live"
+		i = ['?', '.', '-']
+		for splitchar in i:
+				if splitchar in cdnpathc:
+						tcUrl = rtmpurl+'?'+cdnpathc.split(splitchar,1)[1]
+						break
+				else:
+						tcUrl = rtmpurl+'?'+cdnpathc
+		playpath = ' Playpath='+cdnpathc
+		url = tcUrl+pageurl+playpath+swf
+
+		item.setInfo( type="Video", infoLabels={"Title": title, "Plot": plot , "TVShowTitle": channelname, "Description": plot} )
+		xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(url, item)
+		xbmcplugin.endOfDirectory(int(sys.argv[1]))
+		
+		return 1
+	except:
+		return 0
+	
 def MySubscriptions():
     channels=Addon.getSetting('favorite_channels')
     for channel in channels.split(','):
