@@ -347,9 +347,12 @@ def ListLive(gameid):
         xbmc.log(url)
         if int(gameid)>0:
                 url=url+"&search_game="+str(gameid)
-        regexpr = 'a href="/live/(\d+?)\".+?title="(.+?)"'
+        #regexpr = 'a href="/live/(\d+?)\".+?title="(.+?)"'
+        regexpr = 'Opacity">\s.+<a rel="(\d+)".+\s+([a-zA-Z ]+)'
+	
+
         lines=GrabHTMLFromSite(url,"")
-        a=re.compile(regexpr,re.S)
+        a=re.compile(regexpr)
         match=a.findall(lines)
         #xbmc.log(str(match))
         for videoid,title in match:
